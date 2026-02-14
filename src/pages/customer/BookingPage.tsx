@@ -21,9 +21,15 @@ const BookingPage = () => {
   const handleSubmitBooking = async () => {
     setSubmitting(true);
     try {
+      // ❌ REMOVE THIS LINE - no token needed for public booking
+      // const token = localStorage.getItem("token"); 
+      
       const res = await fetch(`${API_URL}/bookings`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json"
+          // ❌ REMOVE Authorization header - public endpoint doesn't need it
+        },
         body: JSON.stringify({
           customerName: fullName,
           email,
@@ -33,10 +39,12 @@ const BookingPage = () => {
           time: selectedTime,
         }),
       });
+
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.message || "Booking failed");
       }
+      
       setStep(2);
     } catch (err: any) {
       console.error(err);
@@ -46,6 +54,7 @@ const BookingPage = () => {
     }
   };
 
+  // Rest of your component remains the same...
   if (step === 2) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
