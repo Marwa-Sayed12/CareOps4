@@ -16,35 +16,35 @@ const BookingPage = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-const handleSubmitBooking = async () => {
-  setSubmitting(true);
-  try {
-    const res = await fetch("http://localhost:5000/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerName: fullName,
-        email,
-        phone,
-        service: "General Consultation",
-        date: selectedDate,
-        time: selectedTime,
-      }),
-    });
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Booking failed");
+  const handleSubmitBooking = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: fullName,
+          email,
+          phone,
+          service: "General Consultation",
+          date: selectedDate,
+          time: selectedTime,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Booking failed");
+      }
+      setStep(2);
+    } catch (err: any) {
+      console.error(err);
+      alert("Booking failed: " + err.message);
+    } finally {
+      setSubmitting(false);
     }
-    setStep(2);
-  } catch (err: any) {
-    console.error(err);
-    alert("Booking failed: " + err.message);
-  } finally {
-    setSubmitting(false);
-  }
-};
-
+  };
 
   if (step === 2) {
     return (

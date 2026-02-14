@@ -1,3 +1,4 @@
+// src/pages/staff/StaffInventory.tsx
 import { useEffect, useState } from "react";
 import { AlertTriangle, Package, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,11 +15,12 @@ const StaffInventory = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/inventory", {
+        const res = await fetch(`${API_URL}/inventory`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
         const data = await res.json();
@@ -46,7 +48,6 @@ const StaffInventory = () => {
         </div>
       </div>
 
-      {/* Alerts Section */}
       {lowStockItems.length > 0 && (
         <div className="bg-warning/10 border border-warning/20 rounded-xl p-4">
           <div className="flex items-center gap-2 text-warning mb-2">
@@ -63,7 +64,6 @@ const StaffInventory = () => {
         </div>
       )}
 
-      {/* Inventory List */}
       <div className="bg-card border border-border rounded-xl divide-y divide-border">
         {loading ? (
           <div className="p-4">Loading...</div>

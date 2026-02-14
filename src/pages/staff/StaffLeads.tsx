@@ -1,3 +1,4 @@
+// src/pages/staff/StaffLeads.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Mail, Calendar } from "lucide-react";
@@ -15,11 +16,12 @@ const StaffLeads = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/leads", {
+        const res = await fetch(`${API_URL}/leads`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
         const data = await res.json();

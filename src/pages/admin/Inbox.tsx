@@ -1,3 +1,4 @@
+// src/pages/admin/Inbox.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -25,12 +26,13 @@ const Inbox = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [reply, setReply] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Fetch conversations
   useEffect(() => {
     if (!user?.token) return;
 
-    fetch("http://localhost:5000/api/conversations", {
+    fetch(`${API_URL}/conversations`, {
       headers: { Authorization: `Bearer ${user.token}` },
     })
       .then(res => res.json())
@@ -46,7 +48,7 @@ const Inbox = () => {
     if (!selected || reply.trim() === "") return;
 
     const res = await fetch(
-      `http://localhost:5000/api/conversations/${selected._id}/messages`,
+      `${API_URL}/conversations/${selected._id}/messages`,
       {
         method: "POST",
         headers: {

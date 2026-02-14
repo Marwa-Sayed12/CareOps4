@@ -1,3 +1,4 @@
+// src/pages/admin/DashboardHome.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -38,9 +39,9 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("Good morning");
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
-    // Set greeting based on time of day
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
     else if (hour < 18) setGreeting("Good afternoon");
@@ -55,7 +56,7 @@ const DashboardHome = () => {
       setError(null);
       
       console.log("Fetching dashboard data...");
-      const res = await fetch("http://localhost:5000/api/dashboard/overview", {
+      const res = await fetch(`${API_URL}/dashboard/overview`, {
         headers: { 
           Authorization: `Bearer ${user.token}`,
           "Content-Type": "application/json"
@@ -70,12 +71,10 @@ const DashboardHome = () => {
       const responseData = await res.json();
       console.log("Dashboard data received:", responseData);
       
-      // Ensure the data has the expected structure
       if (!responseData || typeof responseData !== 'object') {
         throw new Error("Invalid data format received");
       }
 
-      // Set default values for missing data
       const formattedData: DashboardData = {
         stats: {
           todaysBookings: responseData.stats?.todaysBookings ?? 0,

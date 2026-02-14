@@ -26,7 +26,14 @@ app.use(cors({
 }));
 
 // Handle preflight requests
-app.options("*", cors());
+app.use(cors({
+  origin: [
+    'https://careops-frontend.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:8080'
+  ],
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

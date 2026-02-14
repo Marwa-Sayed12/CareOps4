@@ -1,3 +1,4 @@
+// src/pages/staff/StaffForms.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FileText, Clock, CheckCircle, AlertCircle } from "lucide-react";
@@ -6,11 +7,12 @@ const StaffForms = () => {
   const { user } = useAuth();
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchForms = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/forms", {
+        const res = await fetch(`${API_URL}/forms`, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         const data = await res.json();

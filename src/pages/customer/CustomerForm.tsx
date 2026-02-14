@@ -1,3 +1,4 @@
+// src/pages/customer/CustomerForm.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,14 @@ const CustomerForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");  // Added phone field
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!fullName || !email) {
       alert("Name and Email are required");
       return;
@@ -28,15 +29,15 @@ const CustomerForm = () => {
     try {
       console.log("Submitting form...", { fullName, email, phone, message });
 
-      const res = await fetch("http://localhost:5000/api/leads/public", {
+      const res = await fetch(`${API_URL}/leads/public`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName,  // Changed from 'name' to 'fullName'
+          fullName,
           email,
-          phone,     // Added phone field
+          phone,
           message: message || "Customer submitted a form",
-          workspaceId: "" // Optional: add if you have a specific workspace ID
+          workspaceId: ""
         }),
       });
 

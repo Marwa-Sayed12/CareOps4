@@ -1,3 +1,4 @@
+// src/pages/admin/Forms.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FileText, AlertCircle, CheckCircle2, Clock } from "lucide-react";
@@ -14,11 +15,12 @@ const Forms = () => {
   const { user } = useAuth();
   const [forms, setForms] = useState<any[]>([]);
   const [tab, setTab] = useState<string>("All");
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     if (!user?.workspace || !user?.token) return;
 
-    fetch(`http://localhost:5000/api/forms/`, {
+    fetch(`${API_URL}/forms`, {
       headers: {
         Authorization: `Bearer ${user.token}`,
       },
@@ -31,7 +33,6 @@ const Forms = () => {
       .catch(err => console.error(err));
   }, [user]);
 
-  // Filter forms based on tab selection
   const filtered = tab === "All" ? forms : forms.filter(f => f.status.toLowerCase() === tab.toLowerCase());
 
   return (

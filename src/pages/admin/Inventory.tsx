@@ -1,3 +1,4 @@
+// src/pages/admin/Inventory.tsx
 import { useEffect, useState } from "react";
 import { AlertTriangle, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,10 +15,11 @@ const Inventory = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/inventory", {
+      const res = await fetch(`${API_URL}/inventory`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
@@ -33,7 +35,7 @@ const Inventory = () => {
       console.error("Inventory fetch error:", err);
       setItems([]);
     } finally {
-      setLoading(false); // 🔥 THIS WAS MISSING
+      setLoading(false);
     }
   };
 

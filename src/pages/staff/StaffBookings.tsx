@@ -20,7 +20,7 @@ const StaffBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/bookings", {
+        const res = await fetch("API_URL/bookings", {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         const data = await res.json();
@@ -41,7 +41,7 @@ const StaffBookings = () => {
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
-      await fetch(`http://localhost:5000/api/bookings/${id}`, {
+      await fetch(`API_URL/bookings/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@ const StaffBookings = () => {
         body: JSON.stringify({ status })
       });
       // Refresh bookings
-      const res = await fetch("http://localhost:5000/api/bookings", {
+      const res = await fetch("API_URL/bookings", {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();

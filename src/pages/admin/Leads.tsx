@@ -1,3 +1,4 @@
+// src/pages/admin/Leads.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,22 +15,18 @@ type Lead = {
 
 const Leads = () => {
   const { user } = useAuth();
-
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [source, setSource] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  // ===============================
-  // Fetch Leads
-  // ===============================
   const fetchLeads = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/leads", {
+      const res = await fetch(`${API_URL}/leads`, {
         headers: { Authorization: `Bearer ${user?.token}` },
       });
       if (!res.ok) {
@@ -50,9 +47,6 @@ const Leads = () => {
     if (user?.token) fetchLeads();
   }, [user]);
 
-  // ===============================
-  // Add Lead
-  // ===============================
   const handleAddLead = async () => {
     if (!name || !email || !source) {
       setError("All fields are required.");
@@ -63,7 +57,7 @@ const Leads = () => {
       setSubmitting(true);
       setError("");
 
-      const res = await fetch("http://localhost:5000/api/leads", {
+      const res = await fetch(`${API_URL}/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +76,7 @@ const Leads = () => {
       setEmail("");
       setSource("");
 
-      fetchLeads(); // Refresh list
+      fetchLeads();
     } catch (err) {
       console.error(err);
       setError("Something went wrong.");
@@ -95,7 +89,7 @@ const Leads = () => {
     if (!confirm("Are you sure you want to delete this lead?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/leads/${id}`, {
+      const res = await fetch(`${API_URL}/leads/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${user?.token}` },
       });
@@ -117,7 +111,6 @@ const Leads = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-foreground">Leads & Conversations</h1>
 
-      {/* Add Lead */}
       <div className="bg-card border rounded-xl p-4 space-y-4">
         <h2 className="font-semibold">Add New Lead</h2>
         <div className="grid md:grid-cols-4 gap-4">
@@ -131,7 +124,6 @@ const Leads = () => {
         {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
 
-      {/* Leads List */}
       <div className="bg-card border border-border rounded-xl divide-y divide-border">
         {loading ? (
           <div className="p-4">Loading...</div>

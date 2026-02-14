@@ -53,10 +53,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   });
 
+  // Define API_URL at the top of the component
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
   // Login function
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -66,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      setUser(data); // update user state
+      setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
 
       const onboarded = data.isOnboarded ?? false;
@@ -80,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Signup function
+  // Signup function - FIXED
   const signup = async (form: {
     businessName: string;
     email: string;
@@ -89,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     address: string;
   }) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_URL}/auth/signup`, {  // ✅ FIXED: using API_URL
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

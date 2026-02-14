@@ -1,3 +1,4 @@
+// src/pages/admin/Staff.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -5,21 +6,17 @@ import { Input } from "@/components/ui/input";
 
 const Staff = () => {
   const { user } = useAuth();
-
   const [staffMembers, setStaffMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [email, setEmail] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  // ===============================
-  // Fetch Staff
-  // ===============================
   const fetchStaff = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/staff", {
+      const res = await fetch(`${API_URL}/users/staff`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
@@ -46,9 +43,6 @@ const Staff = () => {
     }
   }, [user]);
 
-  // ===============================
-  // Invite Staff
-  // ===============================
   const handleInvite = async () => {
     if (!email || !businessName) {
       setError("All fields are required.");
@@ -59,7 +53,7 @@ const Staff = () => {
       setSubmitting(true);
       setError("");
 
-      const res = await fetch("http://localhost:5000/api/users/create-staff", {
+      const res = await fetch(`${API_URL}/users/create-staff`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +62,7 @@ const Staff = () => {
         body: JSON.stringify({
           email,
           businessName,
-          password: "123456", // default password (can improve later)
+          password: "123456",
         }),
       });
 
@@ -79,11 +73,8 @@ const Staff = () => {
         return;
       }
 
-      // Clear form
       setEmail("");
       setBusinessName("");
-
-      // Refresh list
       fetchStaff();
     } catch (err) {
       console.error(err);
@@ -94,37 +85,34 @@ const Staff = () => {
   };
 
   const handleDelete = async (id: string) => {
-  if (!confirm("Are you sure you want to delete this staff?")) return;
+    if (!confirm("Are you sure you want to delete this staff?")) return;
 
-  try {
-    const res = await fetch(`http://localhost:5000/api/users/staff/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${user?.token}`,
-      },
-    });
+    try {
+      const res = await fetch(`${API_URL}/users/staff/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.message || "Failed to delete staff.");
-      return;
+      if (!res.ok) {
+        alert(data.message || "Failed to delete staff.");
+        return;
+      }
+
+      fetchStaff();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
     }
-
-    // Refresh list
-    fetchStaff();
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong.");
-  }
-};
-
+  };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Staff</h1>
 
-      {/* ================= Invite Section ================= */}
       <div className="bg-card border rounded-xl p-4 space-y-4">
         <h2 className="font-semibold">Invite Staff</h2>
 
@@ -149,7 +137,6 @@ const Staff = () => {
         )}
       </div>
 
-      {/* ================= Staff List ================= */}
       <div className="bg-card border rounded-xl divide-y">
         {loading ? (
           <div className="p-4">Loading...</div>
@@ -167,18 +154,17 @@ const Staff = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-              <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                {staff.role}
-              </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDelete(staff._id)}
-              >
-                Delete
-              </Button>
-            </div>
-
+                <span className="text-xs px-2 py-1 bg-muted rounded-full">
+                  {staff.role}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(staff._id)}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           ))
         )}

@@ -1,16 +1,16 @@
+// src/pages/staff/StaffDashboardHome.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { 
   Calendar, 
   MessageSquare, 
   FileText, 
   Package,
-  Users,
   Clock,
   ArrowRight 
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface StaffStats {
   todayBookings: number;
@@ -36,11 +36,12 @@ const StaffDashboardHome = () => {
     recentActivity: []
   });
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchStaffDashboard = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/staff/dashboard", {
+        const res = await fetch(`${API_URL}/staff/dashboard`, {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         const data = await res.json();
@@ -80,7 +81,6 @@ const StaffDashboardHome = () => {
         </p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-card border border-border rounded-xl p-5">
           <Calendar className="h-5 w-5 text-primary mb-3" />
@@ -107,7 +107,6 @@ const StaffDashboardHome = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div className="bg-card border border-border rounded-xl p-6">
         <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
           <Clock className="h-4 w-4" />
@@ -137,7 +136,6 @@ const StaffDashboardHome = () => {
         )}
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-3 gap-4">
         <Link to="/staff/inbox">
           <Button variant="outline" className="w-full justify-between">

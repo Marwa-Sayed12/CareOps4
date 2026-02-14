@@ -1,6 +1,7 @@
+// src/pages/staff/StaffTeam.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, Mail, Shield, User } from "lucide-react";
+import { Users, Mail, User } from "lucide-react";
 
 interface StaffMember {
   _id: string;
@@ -19,11 +20,12 @@ const StaffTeam = () => {
   const { user } = useAuth();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/users/staff", {
+        const res = await fetch(`${API_URL}/users/staff`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
         const data = await res.json();
@@ -69,7 +71,6 @@ const StaffTeam = () => {
                 </span>
               </div>
               
-              {/* Permissions */}
               <div className="mt-2 flex flex-wrap gap-2">
                 {member.permissions?.inbox && (
                   <span className="text-xs bg-info/10 text-info px-2 py-1 rounded-full">Inbox</span>

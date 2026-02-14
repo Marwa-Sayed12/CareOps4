@@ -1,3 +1,4 @@
+// src/pages/staff/StaffInvite.tsx
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const StaffInvite = () => {
   const [inviteSent, setInviteSent] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +30,7 @@ const StaffInvite = () => {
     setInviteSent(false);
 
     try {
-      const res = await fetch("http://localhost:5000/api/staff/invite", {
+      const res = await fetch(`${API_URL}/staff/invite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +45,6 @@ const StaffInvite = () => {
         throw new Error(data.message || "Failed to send invite");
       }
 
-      // In development, show the invite link
       const link = `${window.location.origin}/staff-signup?token=${data.invite?.token || 'demo-token'}`;
       setInviteLink(link);
       setInviteSent(true);
@@ -119,7 +120,6 @@ const StaffInvite = () => {
             <span className="text-sm font-medium">Invitation Sent!</span>
           </div>
           
-          {/* Development-only invite link */}
           {inviteLink && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">

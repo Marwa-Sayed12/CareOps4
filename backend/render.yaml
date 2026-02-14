@@ -1,7 +1,9 @@
+# Backend service
 services:
   - type: web
     name: careops-backend
     env: node
+    rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
     envVars:
@@ -14,4 +16,15 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://your-frontend-url.onrender.com
+        value: https://careops-frontend.onrender.com
+
+  # Frontend service
+  - type: web
+    name: careops-frontend
+    env: static
+    rootDir: .
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://careops-backend.onrender.com/api

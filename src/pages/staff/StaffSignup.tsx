@@ -1,3 +1,4 @@
+// src/pages/staff/StaffSignup.tsx
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,9 @@ const StaffSignup = () => {
   const [loading, setLoading] = useState(false);
   const [inviteValid, setInviteValid] = useState(true);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
-    // Here you could validate the token with backend
     if (!token) {
       setInviteValid(false);
     }
@@ -44,8 +45,7 @@ const StaffSignup = () => {
     setLoading(true);
 
     try {
-      // This endpoint needs to be created
-      const res = await fetch("http://localhost:5000/api/auth/accept-invite", {
+      const res = await fetch(`${API_URL}/auth/accept-invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,7 +62,6 @@ const StaffSignup = () => {
         throw new Error(data.message || "Failed to create account");
       }
 
-      // Auto login
       localStorage.setItem("user", JSON.stringify(data));
       navigate("/staff/dashboard");
 

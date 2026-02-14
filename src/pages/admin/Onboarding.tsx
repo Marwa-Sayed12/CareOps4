@@ -1,3 +1,4 @@
+// src/pages/admin/Onboarding.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,10 +41,9 @@ const stepIcons = [
 
 const Onboarding = () => {
   const [step, setStep] = useState(0);
-  const { setIsOnboarded } = useAuth();
+  const { setIsOnboarded, user } = useAuth();
   const navigate = useNavigate();
-
-  // ---------------- STATE ----------------
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const [workspace, setWorkspace] = useState({
     businessName: "",
@@ -71,88 +71,81 @@ const Onboarding = () => {
     location: "",
   });
 
-    const [inventoryList, setInventoryList] = useState([
-      { name: "", qty: 0, threshold: 0, unit:""},
-    ]);
-
+  const [inventoryList, setInventoryList] = useState([
+    { name: "", qty: 0, threshold: 0, unit:""},
+  ]);
 
   const [staffData, setStaffData] = useState<{ email: string; permissions: string[] }[]>([
-  { email: "", permissions: [] },
-      ]);
-  const { user } = useAuth();
-  // ---------------- SAVE TO BACKEND ----------------
+    { email: "", permissions: [] },
+  ]);
 
   const saveStep = async () => {
-    const base = import.meta.env.VITE_API_URL;
     let url = "";
     let body: any = {};
 
     switch (step) {
       case 0:
-        url = `${base}/api/workspace`;
+        url = `${API_URL}/workspace`;
         body = workspace;
         break;
       case 1:
-        url = `${base}/api/workspace/communication`;
+        url = `${API_URL}/workspace/communication`;
         body = communication;
         break;
       case 2:
-        url = `${base}/api/workspace/contact-form`;
+        url = `${API_URL}/workspace/contact-form`;
         body = contactForm;
         break;
       case 3:
-        url = `${base}/api/workspace/booking`;
+        url = `${API_URL}/workspace/booking`;
         body = booking;
         break;
       case 4:
-        url = `${base}/api/workspace/post-booking`;
+        url = `${API_URL}/workspace/post-booking`;
         body = { intake: true, serviceAgreement: true, documentUpload: true };
         break;
       case 5:
-        url = `${base}/api/inventory`;
-        body = { items: inventoryList }; // wrap in "items" because backend expects array
+        url = `${API_URL}/inventory`;
+        body = { items: inventoryList };
         break;
-
       case 6:
-      url = `${base}/api/workspace/staff`;
-      body = { staff: staffData }; // send the array instead of single string
-      break;
-
+        url = `${API_URL}/workspace/staff`;
+        body = { staff: staffData };
+        break;
       default:
         return;
     }
 
     try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user?.token}`, // ✅ THIS FIXES 401
-      },
-      body: JSON.stringify(body),
-    });
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
-    const data = await res.json();
-    console.log(`Step ${step} saved response:`, data);
+      const data = await res.json();
+      console.log(`Step ${step} saved response:`, data);
 
-    if (!res.ok) {
-      alert(data.message || "Failed to save");
+      if (!res.ok) {
+        alert(data.message || "Failed to save");
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
       return false;
     }
-
-    return true;
-  } catch (err) {
-    console.error(err);
-    alert("Server error");
-    return false;
-  }
-};
+  };
 
   const next = async () => {
     if (step < 7) {
       const ok = await saveStep();
-       if(ok) console.log(`Step ${step} saved`, workspace, communication, booking, staffData);
-
+      if (ok) console.log(`Step ${step} saved`, workspace, communication, booking, staffData);
       if (!ok) return;
       setStep(step + 1);
     } else {
@@ -163,11 +156,8 @@ const Onboarding = () => {
 
   const prev = () => step > 0 && setStep(step - 1);
 
-  // ---------------- UI ----------------
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* NAV */}
       <nav className="h-16 flex items-center px-6 border-b border-border">
         <span className="text-xl font-bold text-primary tracking-tight">
           CareOps
@@ -177,7 +167,6 @@ const Onboarding = () => {
         </span>
       </nav>
 
-      {/* PROGRESS */}
       <div className="px-6 py-4 border-b border-border overflow-x-auto">
         <div className="flex gap-2 min-w-max">
           {stepTitles.map((title, i) => {
@@ -210,7 +199,6 @@ const Onboarding = () => {
         </div>
       </div>
 
-      {/* CONTENT */}
       <div className="flex-1 flex items-start justify-center p-6 pt-12">
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait">
@@ -237,8 +225,6 @@ const Onboarding = () => {
       </div>
     </div>
   );
-
-  // ---------------- STEP CONTENT ----------------
 
   function renderStep() {
     switch (step) {
@@ -480,143 +466,141 @@ const Onboarding = () => {
           </div>
         );
 
- case 5:
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Inventory Setup</h2>
-      <p className="text-sm text-muted-foreground">
-        Add all products you want to track in your inventory.
-      </p>
+      case 5:
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Inventory Setup</h2>
+            <p className="text-sm text-muted-foreground">
+              Add all products you want to track in your inventory.
+            </p>
 
-      {inventoryList.map((item, index) => (
-        <div
-          key={index}
-          className="space-y-4 border-b border-border pb-4 mb-4 rounded-xl p-4 bg-card"
-        >
-          <div>
-            <Label>Item Name</Label>
-            <Input
-              className="mt-1.5"
-              placeholder="Latex Gloves"
-              value={item.name}
-              onChange={(e) => {
-                const newList = [...inventoryList];
-                newList[index].name = e.target.value;
-                setInventoryList(newList);
-              }}
-            />
-          </div>
+            {inventoryList.map((item, index) => (
+              <div
+                key={index}
+                className="space-y-4 border-b border-border pb-4 mb-4 rounded-xl p-4 bg-card"
+              >
+                <div>
+                  <Label>Item Name</Label>
+                  <Input
+                    className="mt-1.5"
+                    placeholder="Latex Gloves"
+                    value={item.name}
+                    onChange={(e) => {
+                      const newList = [...inventoryList];
+                      newList[index].name = e.target.value;
+                      setInventoryList(newList);
+                    }}
+                  />
+                </div>
 
-          <div>
-            <Label>Quantity</Label>
-            <Input
-              type="number"
-              className="mt-1.5"
-              placeholder="50"
-              value={item.qty}
-              onChange={(e) => {
-                const newList = [...inventoryList];
-                newList[index].qty = Number(e.target.value);
-                setInventoryList(newList);
-              }}
-            />
-          </div>
+                <div>
+                  <Label>Quantity</Label>
+                  <Input
+                    type="number"
+                    className="mt-1.5"
+                    placeholder="50"
+                    value={item.qty}
+                    onChange={(e) => {
+                      const newList = [...inventoryList];
+                      newList[index].qty = Number(e.target.value);
+                      setInventoryList(newList);
+                    }}
+                  />
+                </div>
 
-          <div>
-            <Label>Low-Stock Threshold</Label>
-            <Input
-              type="number"
-              className="mt-1.5"
-              placeholder="10"
-              value={item.threshold}
-              onChange={(e) => {
-                const newList = [...inventoryList];
-                newList[index].threshold = Number(e.target.value);
-                setInventoryList(newList);
-              }}
-            />
-          
-          </div>
+                <div>
+                  <Label>Low-Stock Threshold</Label>
+                  <Input
+                    type="number"
+                    className="mt-1.5"
+                    placeholder="10"
+                    value={item.threshold}
+                    onChange={(e) => {
+                      const newList = [...inventoryList];
+                      newList[index].threshold = Number(e.target.value);
+                      setInventoryList(newList);
+                    }}
+                  />
+                </div>
 
-          <div>
-               <Label>Unit</Label>
-          <Input
-            placeholder="Unit (pcs, boxes)"
-            className="mt-1.5"
-            value={item.unit || ""}
-            onChange={(e) => {
-              const newList = [...inventoryList];
-              newList[index].unit = e.target.value;
-              setInventoryList(newList);
-            }}
-          />
-          </div>
+                <div>
+                  <Label>Unit</Label>
+                  <Input
+                    placeholder="Unit (pcs, boxes)"
+                    className="mt-1.5"
+                    value={item.unit || ""}
+                    onChange={(e) => {
+                      const newList = [...inventoryList];
+                      newList[index].unit = e.target.value;
+                      setInventoryList(newList);
+                    }}
+                  />
+                </div>
 
-          {inventoryList.length > 1 && (
+                {inventoryList.length > 1 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      const newList = inventoryList.filter((_, i) => i !== index);
+                      setInventoryList(newList);
+                    }}
+                  >
+                    Remove Item
+                  </Button>
+                )}
+              </div>
+            ))}
+
             <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                const newList = inventoryList.filter((_, i) => i !== index);
-                setInventoryList(newList);
-              }}
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setInventoryList([
+                  ...inventoryList,
+                  { name: "", qty: 0, threshold: 0, unit: "" },
+                ])
+              }
             >
-              Remove Item
+              + Add Another Item
             </Button>
-          )}
-        </div>
-      ))}
+          </div>
+        );
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() =>
-          setInventoryList([
-            ...inventoryList,
-            { name: "", qty: 0, threshold: 0, unit: "" },
-          ])
-        }
-      >
-        + Add Another Item
-      </Button>
-    </div>
-  );
-
-   case 6:
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Add Staff</h2>
-      {staffData.map((s, i) => (
-        <div key={i}>
-          <Label>Email Address</Label>
-          <Input
-            className="mt-1.5"
-            value={s.email}
-            onChange={(e) => {
-              const newStaff = [...staffData];
-              newStaff[i].email = e.target.value;
-              setStaffData(newStaff);
-            }}
-          />
-        </div>
-      ))}
-      <Button
-        className="mt-2"
-        onClick={() => setStaffData([...staffData, { email: "", permissions: [] }])}
-      >
-        Add Another Staff
-      </Button>
-      <p className="text-xs text-muted-foreground mt-2">
-        Permissions: Inbox, Bookings, Forms, Inventory (view only)
-      </p>
-    </div>
-  );
+      case 6:
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Add Staff</h2>
+            {staffData.map((s, i) => (
+              <div key={i}>
+                <Label>Email Address</Label>
+                <Input
+                  className="mt-1.5"
+                  value={s.email}
+                  onChange={(e) => {
+                    const newStaff = [...staffData];
+                    newStaff[i].email = e.target.value;
+                    setStaffData(newStaff);
+                  }}
+                />
+              </div>
+            ))}
+            <Button
+              className="mt-2"
+              onClick={() => setStaffData([...staffData, { email: "", permissions: [] }])}
+            >
+              Add Another Staff
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Permissions: Inbox, Bookings, Forms, Inventory (view only)
+            </p>
+          </div>
+        );
 
       case 7:
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Activate Workspace</h2>
-
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm">
               🚀 Everything looks good! Click Activate & Launch to go live.
             </div>

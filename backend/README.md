@@ -64,21 +64,21 @@ Server runs on `http://localhost:5000`
 
 ```bash
 # Login
-curl -X POST http://localhost:5000/api/auth/login \
+curl -X POST API_URL/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@careops.com","password":"123456"}'
 
 # Use token from response
-curl http://localhost:5000/api/dashboard/overview \
+curl API_URL/dashboard/overview \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 
 # Public: Create contact
-curl -X POST http://localhost:5000/api/contact \
+curl -X POST API_URL/contact \
   -H "Content-Type: application/json" \
   -d '{"fullName":"John Doe","email":"john@test.com","message":"Need appointment"}'
 
 # Public: Create booking
-curl -X POST http://localhost:5000/api/bookings \
+curl -X POST API_URL/bookings \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Jane Smith","email":"jane@test.com","serviceName":"Consultation","date":"2026-02-15","time":"10:00 AM"}'
 ```
