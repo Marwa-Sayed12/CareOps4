@@ -21,15 +21,12 @@ const BookingPage = () => {
   const handleSubmitBooking = async () => {
     setSubmitting(true);
     try {
-      // ❌ REMOVE these 2 lines - no token needed for public booking!
-      // const token = localStorage.getItem("token");
-      // if (!token) throw new Error("Not logged in");
-
+    
       const res = await fetch(`${API_URL}/bookings`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json"
-          // ❌ REMOVE Authorization header
+         
         },
         body: JSON.stringify({
           customerName: fullName,
