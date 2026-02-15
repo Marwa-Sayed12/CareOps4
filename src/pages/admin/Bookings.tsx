@@ -1,5 +1,6 @@
 // src/pages/admin/Bookings.tsx
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext"; // ✅ ADD THIS
 import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +14,7 @@ interface Booking {
 }
 
 const Bookings = () => {
+  const { user } = useAuth(); // ✅ Get user from context
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,11 +23,20 @@ const Bookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Not logged in");
+        // ✅ Get token from user object
+        const token = user?.token;
+        
+        if (!token) {
+          throw new Error("Not logged in");
+        }
+
+        console.log("Fetching bookings with token:", token.substring(0, 10) + "...");
 
         const res = await fetch(`${API_URL}/bookings`, {
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { 
+            "Content-Type": "application/json", 
+            Authorization: `Bearer ${token}` 
+          },
         });
 
         if (!res.ok) {
@@ -34,7 +45,7 @@ const Bookings = () => {
         }
 
         const data = await res.json();
-        setBookings(data);
+        setBookings(Array.isArray(data) ? data : []);
       } catch (err: any) {
         console.error(err);
         setError(err.message);
@@ -42,15 +53,29 @@ const Bookings = () => {
         setLoading(false);
       }
     };
-    fetchBookings();
-  }, []);
+
+    if (user?.token) {
+      fetchBookings();
+    } else {
+      setError("Not logged in");
+      setLoading(false);
+    }
+  }, [user]); // ✅ Re-run when user changes
 
   const today = new Date().toISOString().split("T")[0];
   const todayBookings = bookings.filter(b => b.date?.split("T")[0] === today);
   const upcomingBookings = bookings.filter(b => b.date?.split("T")[0] > today);
 
   if (loading) return <div className="p-6">Loading bookings...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
+  
+  if (error) return (
+    <div className="p-6">
+      <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+        <p className="font-semibold">Error: {error}</p>
+        <p className="text-sm mt-2">Please try logging in again.</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -60,7 +85,7 @@ const Bookings = () => {
       <div className="bg-card border border-border rounded-xl">
         <div className="p-4 border-b border-border">
           <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" /> Today's Bookings
+            <Clock className="h-4 w-4 text-primary" /> Today's Bookings ({todayBookings.length})
           </h3>
         </div>
         <div className="divide-y divide-border">
@@ -84,7 +109,7 @@ const Bookings = () => {
       {/* Upcoming bookings */}
       <div className="bg-card border border-border rounded-xl">
         <div className="p-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">Upcoming Bookings</h3>
+          <h3 className="font-semibold text-foreground">Upcoming Bookings ({upcomingBookings.length})</h3>
         </div>
         <div className="divide-y divide-border">
           {upcomingBookings.length === 0 ? (
@@ -93,7 +118,7 @@ const Bookings = () => {
             <div key={b._id} className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-foreground">{b.customerName}</p>
-                <p className="text-xs text-muted-foreground">{b.service} — {b.time || "N/A"}</p>
+                <p className="text-xs text-muted-foreground">{b.service} — {new Date(b.date).toLocaleDateString()} {b.time || ""}</p>
               </div>
               <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">Confirmed</span>
             </div>
