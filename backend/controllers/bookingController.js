@@ -47,22 +47,35 @@ exports.createBooking = async (req, res) => {
 };
 
 // Get bookings for admin dashboard - WITH WORKSPACE FILTER
+// Get bookings for admin dashboard - WITH WORKSPACE FILTER
 exports.getBookings = async (req, res) => {
   try {
+    // Log the entire user object from the auth middleware
+    console.log("🔍 req.user:", JSON.stringify(req.user, null, 2));
+    
     // Get workspace from authenticated user
     const workspaceId = req.user?.workspace;
     
+    console.log("🔍 Workspace ID from token:", workspaceId);
+    
     if (!workspaceId) {
-      return res.status(401).json({ message: "Not authorized" });
+      console.log("❌ No workspace ID found in token");
+      return res.status(401).json({ message: "Not authorized - no workspace" });
     }
 
+    // Log the query we're about to run
+    console.log("🔍 Finding bookings with workspace:", workspaceId.toString());
+    
     const bookings = await Booking.find({ 
       workspace: workspaceId 
     }).sort({ date: 1 });
     
+    console.log(`✅ Found ${bookings.length} bookings`);
+    console.log("📊 Bookings:", JSON.stringify(bookings, null, 2));
+    
     res.json(bookings);
   } catch (err) {
-    console.error("Get bookings error:", err);
+    console.error("❌ Get bookings error:", err);
     res.status(500).json({ message: err.message });
   }
 };

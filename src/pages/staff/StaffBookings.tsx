@@ -1,3 +1,4 @@
+// src/pages/staff/StaffBookings.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Calendar, Clock, CheckCircle, XCircle } from "lucide-react";
@@ -16,11 +17,12 @@ const StaffBookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'; // ✅ ADD THIS
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch("API_URL/bookings", {
+        const res = await fetch(`${API_URL}/bookings`, { // ✅ FIXED
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         const data = await res.json();
@@ -41,7 +43,7 @@ const StaffBookings = () => {
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
-      await fetch(`API_URL/bookings/${id}`, {
+      await fetch(`${API_URL}/bookings/${id}`, { // ✅ FIXED
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +52,7 @@ const StaffBookings = () => {
         body: JSON.stringify({ status })
       });
       // Refresh bookings
-      const res = await fetch("API_URL/bookings", {
+      const res = await fetch(`${API_URL}/bookings`, { // ✅ FIXED
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();

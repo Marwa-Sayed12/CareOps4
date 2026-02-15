@@ -20,53 +20,59 @@ const Bookings = () => {
   const [error, setError] = useState<string | null>(null);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        // ✅ Get token from user object, not localStorage
-        const token = user?.token;
-        
-        if (!token) {
-          console.log("No token found");
-          setError("Not logged in");
-          setLoading(false);
-          return;
-        }
-
-        console.log("Fetching bookings with token");
-
-        const res = await fetch(`${API_URL}/bookings`, {
-          headers: { 
-            "Content-Type": "application/json", 
-            Authorization: `Bearer ${token}` 
-          },
-        });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Session expired - please login again");
-          }
-          const errData = await res.json();
-          throw new Error(errData.message || "Failed to fetch bookings");
-        }
-
-        const data = await res.json();
-        setBookings(Array.isArray(data) ? data : []);
-      } catch (err: any) {
-        console.error("Fetch error:", err);
-        setError(err.message);
-      } finally {
+useEffect(() => {
+  const fetchBookings = async () => {
+    try {
+      console.log("🔍 Bookings component - user:", user);
+      console.log("🔍 Bookings component - token:", user?.token);
+      
+      const token = user?.token;
+      
+      if (!token) {
+        console.log("❌ No token found");
+        setError("Not logged in");
         setLoading(false);
+        return;
       }
-    };
 
-    if (user?.token) {
-      fetchBookings();
-    } else {
-      setError("Not logged in");
+      console.log("✅ Token found, fetching bookings...");
+      console.log("📡 API URL:", `${API_URL}/bookings`);
+
+      const res = await fetch(`${API_URL}/bookings`, {
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
+      });
+
+      console.log("📡 Response status:", res.status);
+
+      if (!res.ok) {
+        const errData = await res.json();
+        console.log("❌ Error response:", errData);
+        throw new Error(errData.message || "Failed to fetch bookings");
+      }
+
+      const data = await res.json();
+      console.log("✅ Bookings data:", data);
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error("❌ Fetch error:", err);
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
-  }, [user]); // ✅ Re-run when user changes
+  };
+
+  if (user?.token) {
+    fetchBookings();
+  } else {
+    setError("Not logged in");
+    setLoading(false);
+  }
+}, [user]);
+
+
 
   const today = new Date().toISOString().split("T")[0];
   const todayBookings = bookings.filter(b => b.date?.split("T")[0] === today);
