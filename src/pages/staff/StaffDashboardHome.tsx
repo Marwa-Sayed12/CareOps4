@@ -45,7 +45,16 @@ const StaffDashboardHome = () => {
           headers: { Authorization: `Bearer ${user?.token}` }
         });
         const data = await res.json();
-        setStats(data);
+        
+        // ✅ FIXED: Safe assignment with fallback values
+        setStats({
+          todayBookings: data.todayBookings || 0,
+          unreadMessages: data.unreadMessages || 0,
+          pendingForms: data.pendingForms || 0,
+          lowStockItems: data.lowStockItems || 0,
+          newLeads: data.newLeads || 0,
+          recentActivity: Array.isArray(data.recentActivity) ? data.recentActivity : []
+        });
       } catch (error) {
         console.error("Failed to fetch staff dashboard:", error);
       } finally {
@@ -53,7 +62,11 @@ const StaffDashboardHome = () => {
       }
     };
 
-    fetchStaffDashboard();
+    if (user?.token) {
+      fetchStaffDashboard();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   if (loading) {
