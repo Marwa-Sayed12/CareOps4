@@ -21,14 +21,15 @@ const BookingPage = () => {
   const handleSubmitBooking = async () => {
     setSubmitting(true);
     try {
-      // ❌ REMOVE THIS LINE - no token needed for public booking
-      // const token = localStorage.getItem("token"); 
-      
+      // ❌ REMOVE these 2 lines - no token needed for public booking!
+      // const token = localStorage.getItem("token");
+      // if (!token) throw new Error("Not logged in");
+
       const res = await fetch(`${API_URL}/bookings`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json"
-          // ❌ REMOVE Authorization header - public endpoint doesn't need it
+          // ❌ REMOVE Authorization header
         },
         body: JSON.stringify({
           customerName: fullName,
@@ -54,7 +55,6 @@ const BookingPage = () => {
     }
   };
 
-  // Rest of your component remains the same...
   if (step === 2) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
