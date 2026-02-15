@@ -1,6 +1,6 @@
 // src/pages/admin/Bookings.tsx
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext"; // ✅ ADD THIS
+import { useAuth } from "@/contexts/AuthContext"; // ✅ ADD THIS IMPORT
 import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -23,14 +23,17 @@ const Bookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        // ✅ Get token from user object
+        // ✅ Get token from user object, not localStorage
         const token = user?.token;
         
         if (!token) {
-          throw new Error("Not logged in");
+          console.log("No token found");
+          setError("Not logged in");
+          setLoading(false);
+          return;
         }
 
-        console.log("Fetching bookings with token:", token.substring(0, 10) + "...");
+        console.log("Fetching bookings with token");
 
         const res = await fetch(`${API_URL}/bookings`, {
           headers: { 
@@ -40,6 +43,9 @@ const Bookings = () => {
         });
 
         if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error("Session expired - please login again");
+          }
           const errData = await res.json();
           throw new Error(errData.message || "Failed to fetch bookings");
         }
@@ -47,7 +53,7 @@ const Bookings = () => {
         const data = await res.json();
         setBookings(Array.isArray(data) ? data : []);
       } catch (err: any) {
-        console.error(err);
+        console.error("Fetch error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
