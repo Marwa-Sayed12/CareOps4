@@ -11,40 +11,95 @@ connectDB();
 
 const app = express();
 
-// ==================== Clean CORS Configuration ====================
+// ==================== COMPLETE CORS CONFIGURATION ====================
+// All possible origins your app might use
 const allowedOrigins = [
+  // Local development
   "http://localhost:5173",
   "http://localhost:8080",
+  "http://localhost:3000",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:8080",
+  "http://127.0.0.1:3000",
+  
+  // Vercel deployments
   "https://care-ops4.vercel.app",
+  "https://care-ops4.vercel.app/",
+  "https://www.care-ops4.vercel.app",
+  "https://care-ops4-git-main-marwa-sayed12s-projects.vercel.app",
   "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
-  process.env.FRONTEND_URL
+  "https://care-ops4-marwa-sayed12s-projects.vercel.app",
+  
+  // Render deployments
+  "https://careops4.onrender.com",
+  "https://www.careops4.onrender.com",
+  "https://careops-backend.onrender.com",
+  "https://careops-frontend.onrender.com",
+  
+  // Previous frontend URLs
+  "https://careops-frontend.onrender.com",
+  "https://careops-frontend.onrender.com/",
+  
+  // Environment variable
+  process.env.FRONTEND_URL,
+  
+  // Add any custom domain if you have one
+  // "https://yourcustomdomain.com",
+  // "https://www.yourcustomdomain.com"
 ].filter(Boolean); // Remove undefined values
+
+// Also allow all Vercel preview deployments (wildcard)
+const vercelWildcard = /^https:\/\/care-ops4-.*\.vercel\.app$/;
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
+    // Allow requests with no origin (mobile apps, curl, Postman, etc)
     if (!origin) {
-      console.log("✅ Allowed request with no origin");
+      console.log("✅ Allowed: No origin (mobile/API client)");
       return callback(null, true);
     }
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      console.log("✅ Allowed origin:", origin);
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log("✅ Allowed origin (exact match):", origin);
       return callback(null, true);
-    } else {
-      console.log("❌ Blocked origin:", origin);
-      return callback(new Error('CORS not allowed'), false);
     }
+    
+    // Check if origin matches Vercel preview pattern
+    if (vercelWildcard.test(origin)) {
+      console.log("✅ Allowed origin (Vercel preview):", origin);
+      return callback(null, true);
+    }
+    
+    // For production, you might want to log but still allow (temporary)
+    if (process.env.NODE_ENV === 'production') {
+      console.log("⚠️ New origin detected - allowing temporarily:", origin);
+      // Add to allowedOrigins dynamically (optional)
+      allowedOrigins.push(origin);
+      return callback(null, true);
+    }
+    
+    console.log("❌ Blocked origin:", origin);
+    return callback(new Error('CORS not allowed'), false);
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With", 
+    "Accept",
+    "Origin",
+    "Access-Control-Allow-Origin",
+    "Access-Control-Allow-Credentials"
+  ],
+  exposedHeaders: ["Content-Length", "Authorization", "Set-Cookie"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
-// Handle preflight requests
-app.options("*", cors());
+// Handle preflight requests explicitly
+app.options('*', cors());
 
 // ==================== Debug Middleware ====================
 app.use((req, res, next) => {
@@ -55,6 +110,7 @@ app.use((req, res, next) => {
   console.log("  - URL:", req.url);
   console.log("  - User-Agent:", req.headers['user-agent']?.substring(0, 50) + "...");
   console.log("  - Content-Type:", req.headers['content-type']);
+  console.log("  - Authorization:", req.headers.authorization ? "Present ✅" : "Not present ❌");
   next();
 });
 
@@ -95,8 +151,19 @@ app.get("/api/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
     cors: {
       origin: req.headers.origin || "none",
-      allowed: allowedOrigins
+      allowedOrigins: allowedOrigins,
+      allowed: allowedOrigins.includes(req.headers.origin || "") || !req.headers.origin
     }
+  });
+});
+
+// ==================== Test CORS Endpoint ====================
+app.get("/api/test-cors", (req, res) => {
+  res.json({
+    message: "CORS is working!",
+    yourOrigin: req.headers.origin || "No origin",
+    allowedOrigins: allowedOrigins,
+    headers: req.headers
   });
 });
 
@@ -132,7 +199,12 @@ const server = app.listen(PORT, () => {
   console.log(`📧 Email Service: ${process.env.RESEND_API_KEY ? "Configured ✅" : "Not Configured ❌"}`);
   console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:5173"}`);
   console.log(`⚙️ Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`✅ Allowed Origins:`, allowedOrigins);
+  console.log(`\n✅ Allowed Origins (${allowedOrigins.length}):`);
+  allowedOrigins.forEach((origin, i) => {
+    console.log(`   ${i+1}. ${origin}`);
+  });
+  console.log(`   ✅ Vercel preview deployments (wildcard): https://care-ops4-*.vercel.app`);
+  console.log(`   ✅ No origin requests (mobile apps, API clients)`);
   console.log(`\n⏰ Starting cron jobs...\n`);
   
   // Start cron jobs for automated emails
