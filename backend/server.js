@@ -18,12 +18,16 @@ app.use(cors({
     "http://localhost:8080",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8080",
-    "https://care-ops4.vercel.app",      // Your Vercel frontend
+    "https://care-ops4.vercel.app",      
     "https://careops-frontend.onrender.com",
+     "https://care-ops4.vercel.app/", 
     "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
     "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
     "https://care-ops4.vercel.app/api",
     "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
+    // Add these for mobile
+    "https://care-ops4.vercel.app",
+    "https://*.vercel.app", 
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
