@@ -57,31 +57,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Login function
-  const login = async (email: string, password: string) => {
-    try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+const login = async (email: string, password: string) => {
+  try {
+    console.log("Login attempt from:", window.location.origin);
+    console.log("Using API URL:", API_URL);
 
-      const data = await res.json();
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ email, password }),
+      // Add these options for better mobile compatibility
+      mode: 'cors',
+      credentials: 'include'
+    });
 
-      if (!res.ok) throw new Error(data.message || "Login failed");
+    console.log("Response status:", res.status);
+    
+    const data = await res.json();
+    console.log("Response data:", data);
 
-      setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
+    if (!res.ok) throw new Error(data.message || "Login failed");
 
-      const onboarded = data.isOnboarded ?? false;
-      setIsOnboarded(onboarded);
-      localStorage.setItem("isOnboarded", JSON.stringify(onboarded));
+    // Store in localStorage
+    localStorage.setItem("user", JSON.stringify(data));
+    setUser(data);
+    
+    // Also try sessionStorage as backup
+    sessionStorage.setItem("user", JSON.stringify(data));
 
-      return true;
-    } catch (err) {
-      console.error("Login failed:", err);
-      return false;
-    }
-  };
+    return true;
+  } catch (err) {
+    console.error("Login failed:", err);
+    return false;
+  }
+};
 
   // Signup function - FIXED
   const signup = async (form: {
