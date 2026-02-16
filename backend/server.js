@@ -11,32 +11,52 @@ connectDB();
 
 const app = express();
 
-// ==================== CORS Configuration (FIXED) ====================
+// ==================== Clean CORS Configuration ====================
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:8080",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:8080",
+  "https://care-ops4.vercel.app",
+  "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
+  process.env.FRONTEND_URL
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:8080",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:8080",
-    "https://care-ops4.vercel.app",      
-    "https://careops-frontend.onrender.com",
-     "https://care-ops4.vercel.app/", 
-    "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
-    "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
-    "https://care-ops4.vercel.app/api",
-    "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
-    // Add these for mobile
-    "https://care-ops4.vercel.app",
-    "https://*.vercel.app", 
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) {
+      console.log("✅ Allowed request with no origin");
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      console.log("✅ Allowed origin:", origin);
+      return callback(null, true);
+    } else {
+      console.log("❌ Blocked origin:", origin);
+      return callback(new Error('CORS not allowed'), false);
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
 }));
 
-// Handle preflight requests (OPTIONS)
+// Handle preflight requests
 app.options("*", cors());
+
+// ==================== Debug Middleware ====================
+app.use((req, res, next) => {
+  console.log("\n📱 Incoming Request:");
+  console.log("  - Time:", new Date().toISOString());
+  console.log("  - Origin:", req.headers.origin || "No origin");
+  console.log("  - Method:", req.method);
+  console.log("  - URL:", req.url);
+  console.log("  - User-Agent:", req.headers['user-agent']?.substring(0, 50) + "...");
+  console.log("  - Content-Type:", req.headers['content-type']);
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -72,12 +92,17 @@ app.get("/api/health", (req, res) => {
   res.json({ 
     status: "ok", 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || "development"
+    environment: process.env.NODE_ENV || "development",
+    cors: {
+      origin: req.headers.origin || "none",
+      allowed: allowedOrigins
+    }
   });
 });
 
 // ==================== 404 Handler ====================
 app.use("*", (req, res) => {
+  console.log("❌ 404 - Route not found:", req.method, req.originalUrl);
   res.status(404).json({ 
     message: "Route not found",
     path: req.originalUrl,
@@ -106,12 +131,14 @@ const server = app.listen(PORT, () => {
   console.log(`\n🚀 CareOps API running on port ${PORT}`);
   console.log(`📧 Email Service: ${process.env.RESEND_API_KEY ? "Configured ✅" : "Not Configured ❌"}`);
   console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:5173"}`);
-  console.log(`⚙️ Environment: ${process.env.NODE_ENV || "development"}\n`);
+  console.log(`⚙️ Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`✅ Allowed Origins:`, allowedOrigins);
+  console.log(`\n⏰ Starting cron jobs...\n`);
   
   // Start cron jobs for automated emails
   try {
     startCronJobs();
-    console.log("⏰ Cron jobs started successfully");
+    console.log("✅ Cron jobs started successfully");
   } catch (err) {
     console.error("❌ Failed to start cron jobs:", err.message);
   }

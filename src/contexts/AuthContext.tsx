@@ -57,10 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   // Login function
+// Login function with better mobile error handling
 const login = async (email: string, password: string) => {
   try {
     console.log("Login attempt from:", window.location.origin);
     console.log("Using API URL:", API_URL);
+    console.log("User Agent:", navigator.userAgent);
 
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
@@ -69,12 +71,12 @@ const login = async (email: string, password: string) => {
         "Accept": "application/json"
       },
       body: JSON.stringify({ email, password }),
-      // Add these options for better mobile compatibility
       mode: 'cors',
-      credentials: 'include'
+      credentials: 'omit' // Try with 'omit' instead of 'include' for mobile
     });
 
     console.log("Response status:", res.status);
+    console.log("Response headers:", [...res.headers.entries()]);
     
     const data = await res.json();
     console.log("Response data:", data);
@@ -84,13 +86,12 @@ const login = async (email: string, password: string) => {
     // Store in localStorage
     localStorage.setItem("user", JSON.stringify(data));
     setUser(data);
-    
-    // Also try sessionStorage as backup
-    sessionStorage.setItem("user", JSON.stringify(data));
 
     return true;
   } catch (err) {
     console.error("Login failed:", err);
+    // Show more detailed error
+    alert(`Login failed: ${err.message}. Check console for details.`);
     return false;
   }
 };
