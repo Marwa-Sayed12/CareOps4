@@ -113,6 +113,21 @@ app.use(express.urlencoded({ extended: true }));
 // Static files (if needed)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+
+
+// After your debug middleware and before your API routes, add:
+app.get("/", (req, res) => {
+  res.json({ message: "CareOps API is running" });
+});
+
+app.head("/", (req, res) => {
+  res.status(200).end();
+});
+
+// Then your API routes...
+app.use("/api/auth", require("./routes/authRoutes"));
+// ... rest of your routes
+
 // ==================== API Routes ====================
 
 // Auth Routes
@@ -148,6 +163,26 @@ app.get("/api/health", (req, res) => {
       allowed: allowedOrigins.includes(req.headers.origin || "") || !req.headers.origin
     }
   });
+});
+
+// ==================== Root Route Handler ====================
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "CareOps API is running", 
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/api/health",
+      auth: "/api/auth",
+      leads: "/api/leads",
+      bookings: "/api/bookings"
+    }
+  });
+});
+
+// Also handle HEAD requests to root
+app.head("/", (req, res) => {
+  res.status(200).end();
 });
 
 // ==================== Test CORS Endpoint ====================
