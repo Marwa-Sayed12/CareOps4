@@ -46,60 +46,17 @@ const allowedOrigins = [
   // Add any custom domain if you have one
   // "https://yourcustomdomain.com",
   // "https://www.yourcustomdomain.com"
-].filter(Boolean); // Remove undefined values
+].filter(Boolean); 
 
 // Also allow all Vercel preview deployments (wildcard)
 const vercelWildcard = /^https:\/\/care-ops4-.*\.vercel\.app$/;
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman, etc)
-    if (!origin) {
-      console.log("✅ Allowed: No origin (mobile/API client)");
-      return callback(null, true);
-    }
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      console.log("✅ Allowed origin (exact match):", origin);
-      return callback(null, true);
-    }
-    
-    // Check if origin matches Vercel preview pattern
-    if (vercelWildcard.test(origin)) {
-      console.log("✅ Allowed origin (Vercel preview):", origin);
-      return callback(null, true);
-    }
-    
-    // For production, you might want to log but still allow (temporary)
-    if (process.env.NODE_ENV === 'production') {
-      console.log("⚠️ New origin detected - allowing temporarily:", origin);
-      // Add to allowedOrigins dynamically (optional)
-      allowedOrigins.push(origin);
-      return callback(null, true);
-    }
-    
-    console.log("❌ Blocked origin:", origin);
-    return callback(new Error('CORS not allowed'), false);
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
-  allowedHeaders: [
-    "Content-Type", 
-    "Authorization", 
-    "X-Requested-With", 
-    "Accept",
-    "Origin",
-    "Access-Control-Allow-Origin",
-    "Access-Control-Allow-Credentials"
-  ],
-  exposedHeaders: ["Content-Length", "Authorization", "Set-Cookie"],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  origin: true,
+  credentials: true
 }));
 
-// Handle preflight requests explicitly
-app.options('*', cors());
+
 
 // ==================== Debug Middleware ====================
 app.use((req, res, next) => {
