@@ -10,3 +10,4 @@
 # Ignore the backend folder
 [ignore]
   patterns = ["backend/*"]
+

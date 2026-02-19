@@ -60,10 +60,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 // Login function with better mobile error handling
 const login = async (email: string, password: string) => {
   try {
-    console.log("Login attempt from:", window.location.origin);
-    console.log("Using API URL:", API_URL);
-    console.log("User Agent:", navigator.userAgent);
-
+    console.log("🚀 [DEBUG] Login started");
+    console.log("📍 Origin:", window.location.origin);
+    console.log("🔗 API_URL:", API_URL);
+    
+    // Test CORS first
+    const testRes = await fetch(`${API_URL}/test-cors`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const testData = await testRes.json();
+    console.log("✅ [DEBUG] CORS test passed:", testData);
+    
+    // Now try login
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { 
@@ -71,27 +80,19 @@ const login = async (email: string, password: string) => {
         "Accept": "application/json"
       },
       body: JSON.stringify({ email, password }),
-      mode: 'cors',
-      credentials: 'omit' // Try with 'omit' instead of 'include' for mobile
     });
 
-    console.log("Response status:", res.status);
-    console.log("Response headers:", [...res.headers.entries()]);
-    
+    console.log("📡 Response status:", res.status);
     const data = await res.json();
-    console.log("Response data:", data);
+    console.log("📡 Response data:", data);
 
     if (!res.ok) throw new Error(data.message || "Login failed");
 
-    // Store in localStorage
     localStorage.setItem("user", JSON.stringify(data));
     setUser(data);
-
     return true;
   } catch (err) {
-    console.error("Login failed:", err);
-    // Show more detailed error
-    alert(`Login failed: ${err.message}. Check console for details.`);
+    console.error("❌ Login failed:", err);
     return false;
   }
 };
