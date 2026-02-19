@@ -1,0 +1,11 @@
+[build]
+  base = "/"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NPM_FLAGS = "--prefix=/"
+
+# Ignore the backend folder
+[ignore]
+  patterns = ["backend/*"]
