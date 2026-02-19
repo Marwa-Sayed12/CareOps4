@@ -29,7 +29,7 @@ const allowedOrigins = [
   "https://care-ops4-git-main-marwa-sayed12s-projects.vercel.app",
   "https://care-ops4-dbkdfeg6k-marwa-sayed12s-projects.vercel.app",
   "https://care-ops4-marwa-sayed12s-projects.vercel.app",
-  "https://care-ops.netlify.app/",
+  "https://care-ops.netlify.app",
 
   // Render deployments
   "https://careops4.onrender.com",
